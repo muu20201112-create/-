@@ -2,71 +2,109 @@
 電話自動応答システムのテスト
 """
 
+import sys
+import os
+from unittest.mock import MagicMock, patch, call
 import pytest
-from app import app
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 @pytest.fixture
-def client():
-    app.config["TESTING"] = True
-    with app.test_client() as client:
-        yield client
+def mock_agi():
+    agi = MagicMock()
+    agi.env = {"agi_callerid": "09012345678"}
+    return agi
 
 
-def test_voice_endpoint_returns_xml(client):
-    """着信エンドポイントが TwiML XML を返すことを確認"""
-    response = client.post("/voice")
-    assert response.status_code == 200
-    assert b"<?xml" in response.data or b"<Response>" in response.data
-    assert b"Gather" in response.data
+class TestMainMenu:
+    def test_selects_business_hours_on_digit_1(self, mock_agi):
+        from agi.auto_response import main_menu
+        mock_agi.stream_file.side_effect = ["1", ""]
+        result = main_menu(mock_agi)
+        assert result == "business_hours"
+
+    def test_selects_address_on_digit_2(self, mock_agi):
+        from agi.auto_response import main_menu
+        mock_agi.stream_file.side_effect = ["", "2"]
+        result = main_menu(mock_agi)
+        assert result == "address"
+
+    def test_selects_operator_on_digit_3(self, mock_agi):
+        from agi.auto_response import main_menu
+        mock_agi.stream_file.side_effect = ["", "3"]
+        result = main_menu(mock_agi)
+        assert result == "operator"
+
+    def test_returns_to_main_menu_on_digit_0(self, mock_agi):
+        from agi.auto_response import main_menu
+        # 0 → 無効ループを防ぐため2回目に有効入力
+        mock_agi.stream_file.side_effect = ["", "0", "", "1"]
+        result = main_menu(mock_agi)
+        assert result == "main_menu"
+
+    def test_retries_on_invalid_input(self, mock_agi):
+        from agi.auto_response import main_menu
+        mock_agi.stream_file.side_effect = ["", "9", "", "1"]
+        result = main_menu(mock_agi)
+        assert result == "business_hours"
 
 
-def test_voice_contains_greeting(client):
-    """挨拶メッセージが含まれることを確認"""
-    response = client.post("/voice")
-    assert b"ja-JP" in response.data
+class TestHandleBusinessHours:
+    def test_returns_goodbye_by_default(self, mock_agi):
+        from agi.auto_response import handle_business_hours
+        mock_agi.stream_file.return_value = ""
+        result = handle_business_hours(mock_agi)
+        assert result == "goodbye"
+
+    def test_returns_main_menu_on_digit_0(self, mock_agi):
+        from agi.auto_response import handle_business_hours
+        mock_agi.stream_file.return_value = "0"
+        result = handle_business_hours(mock_agi)
+        assert result == "main_menu"
 
 
-def test_menu_digit_1_business_hours(client):
-    """1番で営業時間案内が返ることを確認"""
-    response = client.post("/menu", data={"Digits": "1"})
-    assert response.status_code == 200
-    assert b"Response" in response.data
+class TestHandleAddress:
+    def test_returns_goodbye_by_default(self, mock_agi):
+        from agi.auto_response import handle_address
+        mock_agi.stream_file.return_value = ""
+        result = handle_address(mock_agi)
+        assert result == "goodbye"
+
+    def test_returns_main_menu_on_digit_0(self, mock_agi):
+        from agi.auto_response import handle_address
+        mock_agi.stream_file.return_value = "0"
+        result = handle_address(mock_agi)
+        assert result == "main_menu"
 
 
-def test_menu_digit_2_address(client):
-    """2番で住所案内が返ることを確認"""
-    response = client.post("/menu", data={"Digits": "2"})
-    assert response.status_code == 200
-    assert b"Response" in response.data
+class TestHandleOperator:
+    def test_sets_transfer_action(self, mock_agi):
+        from agi.auto_response import handle_operator
+        mock_agi.stream_file.return_value = ""
+        result = handle_operator(mock_agi)
+        assert result == "exit"
+        mock_agi.set_variable.assert_any_call("AUTO_RESPONSE_ACTION", "transfer")
+
+    @patch.dict(os.environ, {"OPERATOR_EXTENSION": "200"})
+    def test_uses_env_operator_extension(self, mock_agi):
+        from agi.auto_response import handle_operator
+        mock_agi.stream_file.return_value = ""
+        handle_operator(mock_agi)
+        mock_agi.set_variable.assert_any_call("TRANSFER_DEST", "200")
 
 
-def test_menu_digit_3_transfer(client):
-    """3番でオペレーター転送処理が返ることを確認"""
-    response = client.post("/menu", data={"Digits": "3"})
-    assert response.status_code == 200
-    assert b"Response" in response.data
+class TestRun:
+    def test_full_flow_goodbye(self, mock_agi):
+        from agi.auto_response import run
+        # greeting → digit 1 (業務時間) → no digit → goodbye
+        mock_agi.stream_file.side_effect = ["1", "", ""]
+        run(mock_agi)
+        mock_agi.answer.assert_called_once()
+        mock_agi.hangup.assert_called()
 
-
-def test_menu_digit_0_returns_to_main(client):
-    """0番でメインメニューに戻ることを確認"""
-    response = client.post("/menu", data={"Digits": "0"})
-    assert response.status_code == 200
-    assert b"Gather" in response.data
-
-
-def test_menu_invalid_digit(client):
-    """無効な入力でエラーメッセージが返ることを確認"""
-    response = client.post("/menu", data={"Digits": "9"})
-    assert response.status_code == 200
-    assert b"Response" in response.data
-
-
-def test_status_callback(client):
-    """ステータスコールバックが OK を返すことを確認"""
-    response = client.post("/status", data={
-        "CallSid": "CAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "CallStatus": "completed",
-        "From": "+81XXXXXXXXXX"
-    })
-    assert response.status_code == 200
+    def test_error_handling(self, mock_agi):
+        from agi.auto_response import run
+        mock_agi.answer.side_effect = Exception("接続エラー")
+        run(mock_agi)
+        mock_agi.hangup.assert_called()

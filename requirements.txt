@@ -1,4 +1,2 @@
-flask>=2.3.0
-twilio>=8.0.0
+pyst2>=0.5.1
 python-dotenv>=1.0.0
-gunicorn>=21.0.0
