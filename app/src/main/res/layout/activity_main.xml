@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="電話自動応答"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" />
+
+    <!-- 自動応答 ON/OFF -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="自動応答"
+            android:textSize="18sp" />
+
+        <Switch
+            android:id="@+id/switch_auto_answer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <!-- ステータス表示 -->
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="#888888"
+        android:layout_marginBottom="32dp" />
+
+    <!-- デフォルト電話アプリ設定ボタン -->
+    <Button
+        android:id="@+id/btn_default_phone_app"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="デフォルト電話アプリに設定（推奨）" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="※ res/raw/greeting.mp3 に音声ファイルを配置してください"
+        android:textSize="12sp"
+        android:textColor="#AAAAAA"
+        android:layout_marginTop="32dp" />
+
+</LinearLayout>
