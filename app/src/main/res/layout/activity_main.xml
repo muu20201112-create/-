@@ -53,7 +53,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="※ res/raw/greeting.mp3 に音声ファイルを配置してください"
+        android:text="@string/greeting_help"
         android:textSize="12sp"
         android:textColor="#AAAAAA"
         android:layout_marginTop="32dp" />

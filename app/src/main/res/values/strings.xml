@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">電話自動応答</string>
+    <string name="default_greeting">ただいま電話に出ることができません。恐れ入りますが、後ほどおかけ直しください。</string>
+    <string name="greeting_help">録音音声が未設定の場合は、端末の日本語読み上げを使用します。</string>
 </resources>
