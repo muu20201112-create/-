@@ -1,0 +1,1 @@
+(() => { const n = new URLSearchParams(location.search).get('cover'); if (/^[1-5]$/.test(n || '')) { const img = document.querySelector('.cover-main'); img.src = 'assets/cover-' + n + '.png'; const alts = ['寝ながら聴ける。耳につけないスピーカー。','今夜から、耳を、自由に。','枕の下に、好きな音を。','厚さ12mm。枕の下で聴くスピーカー。','横になる時間に、好きな音を。']; img.alt = alts[Number(n)-1]; } })();

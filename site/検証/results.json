@@ -1,0 +1,43 @@
+{
+  "viewports": [
+    {
+      "width": 375,
+      "overflow": false,
+      "images": [],
+      "longCopies": [],
+      "pointCount": 6,
+      "errors": [],
+      "faq": "passed",
+      "anchor": "passed",
+      "coverSwitch": "passed",
+      "gallery": "passed"
+    },
+    {
+      "width": 768,
+      "overflow": false,
+      "images": [],
+      "longCopies": [],
+      "pointCount": 6,
+      "errors": [],
+      "faq": "passed",
+      "anchor": "passed",
+      "coverSwitch": "passed",
+      "gallery": "passed"
+    },
+    {
+      "width": 1440,
+      "overflow": false,
+      "images": [],
+      "longCopies": [],
+      "pointCount": 6,
+      "errors": [],
+      "faq": "passed",
+      "anchor": "passed",
+      "coverSwitch": "passed",
+      "gallery": "passed"
+    }
+  ],
+  "originalFilesUnchanged": true,
+  "sourceFileCount": 62,
+  "animatedGifs": 2
+}
